@@ -1,6 +1,6 @@
 
 function projects(){
-    return <h1>projects</h1>
+    return <h1>Projetos</h1>
 }
 
 export default projects
