@@ -5,18 +5,19 @@ import Select from '../form/select'
 import SubmitButton from '../form/SubmitButton'
 import styles from './ProjectForm.module.css'
 
-function ProjectForm(btnText) {
+function ProjectForm({btnText}) {
     const [categories, setCategories] = useState([])
 
     useEffect(() => {
-        fetch("http://localhost:5000/categories", {
-            method: "GET",
+        fetch('http://localhost:5000/categories', {
+            method: 'GET',
             headers: {
-                'Content-Type': 'aplication/json'
+                'Content-Type': 'application/json',
             },
         })
             .then((resp) => resp.json())
             .then((data) => {
+                console.log("Dados Recebidos:", data)
                 setCategories(data)
             })
             .catch((err) => console.log(err))
@@ -40,7 +41,7 @@ function ProjectForm(btnText) {
                 name="category_id"
                 text="Selecione a categoriao"
                 options={categories} />
-            <SubmitButton text={btnText.text} />
+            <SubmitButton text={btnText} />
         </form>
     )
 }
