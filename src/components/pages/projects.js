@@ -2,6 +2,7 @@ import { useLocation } from "react-router-dom";
 
 import Message from "../layout/Message";
 import Container from '../layout/Container';
+import Loading from "../layout/Loading";
 import styles from './Projects.module.css';
 import LinkButton from '../layout/LinkButton';
 import ProjectCard from '../project/ProjectCard';
@@ -11,7 +12,7 @@ import { useState, useEffect } from "react";
 function Projects() {
 
     const [projects, setProjects] = useState([])
-
+    const [removeloading, setRemoveLoading] = useState(false)
 
     const location = useLocation();
 
@@ -22,18 +23,21 @@ function Projects() {
     }
 
     useEffect(() => {
-        fetch('http://localhost:5000/projects', {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        })
-            .then((resp) => resp.json())
-            .then((data) => {
-                console.log("Dados Recebidos:", data)
-                setProjects(data)
+        setTimeout(() => {
+            fetch('http://localhost:5000/projects', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
             })
-            .catch((err) => console.log(err))
+                .then((resp) => resp.json())
+                .then((data) => {
+                    console.log("Dados Recebidos:", data)
+                    setProjects(data)
+                    setRemoveLoading(true)
+                })
+                .catch((err) => console.log(err))
+        }, 3000)
     }, [])
 
     return (
@@ -55,6 +59,8 @@ function Projects() {
                             category={project.category.name}
                         />
                     ))}
+                {!removeloading && <Loading />}
+                {removeloading && projects.length === 0 && <Message msg="Nenhum projeto cadastrado" type="info" />}
             </Container>
         </div>
     )
