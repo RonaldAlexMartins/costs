@@ -7,15 +7,13 @@ function Project() {
     const [project, setProject] = useState({})
 
     useEffect(() => {
-        fetch(`http://localhost:3001/projects/${id}`,
+        fetch(`http://localhost:3001/projects/${id}`, {
             method: 'GET',
-            headers: {
-            'Content-Type': 'application/json',
-        },
+            headers: { 'Content-Type': 'application/json' },
+        })
 
-        )
             .then(response => response.json())
-            .then(data => {setProject(data)})
+            .then(data => { setProject(data) })
             .catch(error => console.log(error))
     }, [id])
 
