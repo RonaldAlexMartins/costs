@@ -1,6 +1,8 @@
 import styles from './Project.module.css'
 import { useParams } from 'react-router-dom'
 import { useEffect, useState } from 'react'
+import ProjectForm from '../project/ProjectForm'
+import Message from '../layout/Message'
 
 import Container from '../layout/Container'
 import Loading from '../layout/Loading'
@@ -9,31 +11,65 @@ function Project() {
     const { id } = useParams()
     const [project, setProject] = useState({})
     const [showProjectForm, setShowProjectForm] = useState(false)
+    const [showServiceForm, setShowServiceForm] = useState(false)
+    const [message, setMessage] = useState('')
+    const [type, setType] = useState('')
 
     useEffect(() => {
-        setTimeout(() => {
-            fetch(`http://localhost:3001/projects/${id}`, {
-                method: 'GET',
-                headers: { 'Content-Type': 'application/json' },
-            })
+        const timer = setTimeout(async () => {
+            try {
+                const response = await fetch(`http://localhost:3001/projects/${id}`);
+                const data = await response.json();
+                setProject(data);
+            } catch (error) {
+                console.error("Erro ao buscar o projeto:", error);
+            }
+        }, 2000);
 
-                .then(response => response.json())
-                .then(data => { setProject(data) })
-                .catch(error => console.log(error))
-        }, 5000)
-    }, [id])
+        return () => clearTimeout(timer); // Limpa o timeout se o componente desmontar
+    }, [id]);
+
+    function editPost(project) {
+        setMessage('')
+        setType('')
+        //budget validation
+        if (project.budget < project.cost) {
+            setMessage('O orçamento não pode ser menor que o custo')
+            setType('error')
+            return false
+        }
+
+        fetch(`http://localhost:5000/projects/${id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(project),
+        })
+            .then(response => response.json())
+            .then(data => {
+                setProject(data)
+                setShowProjectForm(false)
+                setMessage('Projeto Atualizado')
+                setType('success')
+                //toggleProjectForm()
+            })
+            .catch(error => console.log(error))
+    }
 
     function toggleProjectForm() {
         setShowProjectForm(!showProjectForm)
+    }
+    function toggleServiceForm() {
+        setShowServiceForm(!showServiceForm)
     }
 
     return (
         <>{project.name ? (
             < div className={styles.project_details} >
                 <Container customClass="column">
+                    {message && <Message type={type} msg={message} />}
                     <div className={styles.details_container}>
                         <h1>Projeto: {project.name}</h1>
-                        <button className= {styles.btn}onClick={toggleProjectForm}>
+                        <button className={styles.btn} onClick={toggleProjectForm}>
                             {!showProjectForm ? 'Editar Projeto' : 'Fechar'}
                         </button>
                         {!showProjectForm ? (
@@ -50,10 +86,23 @@ function Project() {
                             </div>
                         ) : (
                             <div className={styles.project_info}>
-                                <p>Project Form</p>
+                                <ProjectForm handleSubmit={editPost} btnText="Concluir Edição" projectData={project} />
                             </div>
                         )}
                     </div>
+                    <div className={styles.service_form_container}>
+                        <h2>Adicione um Serviço:</h2>
+                        <button className={styles.btn} onClick={toggleServiceForm}>
+                            {!showServiceForm ? 'Adicionar serviço' : 'Fechar'}
+                        </button>
+                        <div className={styles.project_info}>
+                            {showServiceForm && <div>Formulario de Serviço</div>}
+                        </div>
+                    </div>
+                    <h2>Serviços</h2>
+                    <Container customClass="start">
+                        <p>Itens de Serviço</p>
+                    </Container>
                 </Container>
             </div>
         ) : (<Loading />)
